@@ -1,36 +1,146 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Tuku Ramen Website
 
-## Getting Started
+Website dan admin dashboard untuk Tuku Ramen. Aplikasi ini memakai Next.js App Router, Supabase Auth, Supabase Database, dan Supabase Storage untuk mengelola landing page, menu per cabang, paket, FAQ, serta gambar menu.
 
-First, run the development server:
+## Fitur Utama
+
+- Landing page mobile-first dengan informasi brand, menu pilihan, paket, cabang, FAQ, dan CTA reservasi.
+- Halaman menu publik dengan filter cabang `ciputat` dan `pondok-ranji`.
+- Admin dashboard untuk CRUD cabang, menu, paket, dan FAQ.
+- Menu dapat dibedakan per cabang karena `menu_items` terhubung ke `branches`.
+- Upload gambar menu ke Supabase Storage bucket `menu-images`.
+- Proteksi admin memakai Supabase Auth, RLS, dan allowlist tabel `admin_users`.
+
+## Diagram Alur Sistem
+
+```mermaid
+flowchart TD
+  Visitor["Pengunjung website"] --> Landing["Landing page"]
+  Landing --> PublicMenu["Halaman menu publik"]
+  Landing --> Reservation["Link reservasi WhatsApp"]
+  PublicMenu --> BranchFilter["Pilih cabang"]
+  BranchFilter --> MenuData["Data menu dari Supabase"]
+
+  Admin["Admin Tuku Ramen"] --> Login["/admin/login"]
+  Login --> Auth["Supabase Auth"]
+  Auth --> AdminCheck["Cek admin_users"]
+  AdminCheck --> Dashboard["Admin dashboard"]
+  Dashboard --> CrudMenu["CRUD menu per cabang"]
+  Dashboard --> CrudBranch["CRUD cabang"]
+  Dashboard --> CrudPackage["CRUD paket"]
+  Dashboard --> CrudFaq["CRUD FAQ"]
+  CrudMenu --> Storage["Upload gambar ke Storage menu-images"]
+
+  MenuData --> Database["Supabase PostgreSQL"]
+  CrudMenu --> Database
+  CrudBranch --> Database
+  CrudPackage --> Database
+  CrudFaq --> Database
+  Storage --> PublicImage["Public image URL"]
+  PublicImage --> PublicMenu
+```
+
+## Struktur Penting
+
+```txt
+src/app/(public)/page.tsx       Landing page
+src/app/(public)/menu/page.tsx  Menu publik per cabang
+src/app/admin/                  Admin dashboard
+src/components/ui/              Komponen UI publik
+src/lib/supabase/               Supabase client/server/proxy helper
+src/lib/types/database.ts       Type dan fallback data
+src/proxy.ts                    Proteksi route admin
+supabase-schema.sql             Schema database awal
+supabase-complete-menu-seed.sql Seed menu lengkap
+supabase-production-admin-security.sql RLS admin allowlist
+```
+
+## Setup Development
+
+Install dependency:
+
+```bash
+npm install
+```
+
+Buat file `.env.local` dari contoh:
+
+```bash
+cp .env.example .env.local
+```
+
+Isi dengan konfigurasi Supabase project:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+```
+
+Jalankan development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Script `dev` memakai webpack agar lebih ringan untuk laptop development. Kalau ingin mencoba Turbopack:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run dev:turbo
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Setup Supabase
 
-## Learn More
+Jalankan SQL berikut di Supabase SQL Editor sesuai kebutuhan:
 
-To learn more about Next.js, take a look at the following resources:
+1. `supabase-schema.sql` untuk membuat tabel dasar.
+2. `supabase-complete-menu-seed.sql` untuk mengisi data menu, cabang, topping, dan paket.
+3. `supabase-production-admin-security.sql` untuk policy RLS, tabel `admin_users`, dan storage policy.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Sebelum menjalankan file security, pastikan user admin sudah dibuat di Supabase Authentication. Default script memakai:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```sql
+WHERE email = 'admin@tukuramen.com'
+```
 
-## Deploy on Vercel
+Ganti email tersebut jika akun admin development memakai email lain.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Storage Gambar Menu
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Bucket yang dipakai:
+
+```txt
+menu-images
+```
+
+Bucket ini harus public agar gambar menu dapat tampil di website. Policy upload/update/delete tetap dibatasi oleh `public.is_admin()` dari `supabase-production-admin-security.sql`.
+
+## Keamanan
+
+- `.env.local` dan semua file `.env*` tidak ikut commit.
+- Hanya `.env.example` yang boleh masuk repository.
+- Admin dashboard tidak cukup hanya login; user juga harus ada di tabel `admin_users`.
+- RLS public hanya mengizinkan read untuk data website.
+- Write access untuk tabel admin dan storage dibatasi ke admin allowlist.
+- Jangan commit service role key Supabase ke frontend atau repository.
+
+## Perintah Validasi
+
+```bash
+npm run lint
+npm run build
+```
+
+Saat ini lint dapat menampilkan warning Next.js untuk penggunaan `<img>` pada preview gambar menu. Warning tersebut tidak memblokir build.
+
+## Deployment
+
+Untuk deployment ke Vercel atau hosting Next.js lain:
+
+1. Set environment variable `NEXT_PUBLIC_SUPABASE_URL`.
+2. Set environment variable `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+3. Pastikan SQL schema, seed, security policy, dan bucket `menu-images` sudah tersedia di Supabase.
+4. Jalankan build production:
+
+```bash
+npm run build
+```
