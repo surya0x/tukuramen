@@ -40,6 +40,49 @@ flowchart TD
   PublicImage --> PublicMenu
 ```
 
+## Sequence Diagram
+
+```mermaid
+sequenceDiagram
+  actor Visitor as Pengunjung
+  participant Web as Next.js Public Website
+  participant DB as Supabase Database
+  participant WA as WhatsApp
+
+  Visitor->>Web: Buka landing page
+  Web-->>Visitor: Tampilkan brand, menu pilihan, cabang, FAQ
+  Visitor->>Web: Klik Lihat Menu
+  Web->>DB: Ambil branches, categories, menu_items
+  DB-->>Web: Data menu sesuai cabang
+  Web-->>Visitor: Tampilkan menu dan filter cabang
+  Visitor->>Web: Klik reservasi cabang
+  Web-->>WA: Buka link WhatsApp cabang
+```
+
+```mermaid
+sequenceDiagram
+  actor Admin as Admin
+  participant AdminWeb as Next.js Admin Dashboard
+  participant Auth as Supabase Auth
+  participant DB as Supabase Database
+  participant Storage as Supabase Storage
+
+  Admin->>AdminWeb: Login email dan password
+  AdminWeb->>Auth: signInWithPassword
+  Auth-->>AdminWeb: Session user
+  AdminWeb->>DB: Cek user di admin_users
+  DB-->>AdminWeb: Admin valid
+  AdminWeb-->>Admin: Tampilkan dashboard
+  Admin->>AdminWeb: Tambah atau edit menu
+  AdminWeb->>DB: Insert/update menu_items
+  DB-->>AdminWeb: Menu tersimpan
+  Admin->>AdminWeb: Upload gambar menu
+  AdminWeb->>Storage: Upload ke bucket menu-images
+  Storage-->>AdminWeb: Public image URL
+  AdminWeb->>DB: Simpan image_url di menu_items
+  DB-->>AdminWeb: Data menu terupdate
+```
+
 ## Struktur Penting
 
 ```txt
