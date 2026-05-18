@@ -11,6 +11,51 @@ Website dan admin dashboard untuk Tuku Ramen. Aplikasi ini memakai Next.js App R
 - Upload gambar menu ke Supabase Storage bucket `menu-images`.
 - Proteksi admin memakai Supabase Auth, RLS, dan allowlist tabel `admin_users`.
 
+## Use Case Diagram
+
+```mermaid
+flowchart LR
+  Visitor["Pengunjung"]:::actor
+  Admin["Admin Tuku Ramen"]:::actor
+  Auth["Supabase Auth"]:::actor
+  Storage["Supabase Storage"]:::actor
+  WA["WhatsApp"]:::actor
+
+  subgraph System["Sistem Website Tuku Ramen"]
+    UC1(["Melihat landing page"])
+    UC2(["Melihat menu publik"])
+    UC3(["Filter menu per cabang"])
+    UC4(["Melihat paket, cabang, dan FAQ"])
+    UC5(["Melakukan reservasi via WhatsApp"])
+    UC6(["Login admin"])
+    UC7(["Mengelola cabang"])
+    UC8(["Mengelola menu per cabang"])
+    UC9(["Mengelola paket"])
+    UC10(["Mengelola FAQ"])
+    UC11(["Upload gambar menu"])
+  end
+
+  Visitor --> UC1
+  Visitor --> UC2
+  Visitor --> UC3
+  Visitor --> UC4
+  Visitor --> UC5
+  UC5 --> WA
+
+  Admin --> UC6
+  UC6 --> Auth
+  Admin --> UC7
+  Admin --> UC8
+  Admin --> UC9
+  Admin --> UC10
+  Admin --> UC11
+  UC11 --> Storage
+
+  classDef actor fill:#fff7ed,stroke:#c2410c,stroke-width:2px;
+  classDef usecase fill:#f8fafc,stroke:#334155,stroke-width:1px;
+  class UC1,UC2,UC3,UC4,UC5,UC6,UC7,UC8,UC9,UC10,UC11 usecase;
+```
+
 ## Diagram Alur Sistem
 
 ```mermaid
