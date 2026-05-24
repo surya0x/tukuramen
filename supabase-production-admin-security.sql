@@ -11,6 +11,7 @@
 CREATE TABLE IF NOT EXISTS admin_users (
   user_id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   email TEXT NOT NULL UNIQUE,
+  role TEXT NOT NULL DEFAULT 'admin' CHECK (role IN ('admin', 'owner')),
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
@@ -42,9 +43,26 @@ AS $$
   );
 $$;
 
+CREATE OR REPLACE FUNCTION public.is_owner()
+RETURNS BOOLEAN
+LANGUAGE SQL
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.admin_users
+    WHERE user_id = (SELECT auth.uid())
+      AND role = 'owner'
+  );
+$$;
+
 REVOKE ALL ON FUNCTION public.is_admin() FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.is_admin() TO authenticated;
 GRANT EXECUTE ON FUNCTION public.is_admin() TO anon;
+
+REVOKE ALL ON FUNCTION public.is_owner() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.is_owner() TO authenticated;
 
 ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE branches ENABLE ROW LEVEL SECURITY;
@@ -71,8 +89,10 @@ CREATE POLICY "Public read toppings" ON toppings FOR SELECT TO anon, authenticat
 -- Replace broad authenticated write policies with admin-only write policies.
 DROP POLICY IF EXISTS "Admin full access categories" ON categories;
 DROP POLICY IF EXISTS "Admin full access branches" ON branches;
+DROP POLICY IF EXISTS "Owner full access branches" ON branches;
 DROP POLICY IF EXISTS "Admin full access menu_items" ON menu_items;
 DROP POLICY IF EXISTS "Admin full access packages" ON packages;
+DROP POLICY IF EXISTS "Owner full access packages" ON packages;
 DROP POLICY IF EXISTS "Admin full access faqs" ON faqs;
 DROP POLICY IF EXISTS "Admin full access toppings" ON toppings;
 
@@ -81,20 +101,20 @@ ON categories FOR ALL TO authenticated
 USING (public.is_admin())
 WITH CHECK (public.is_admin());
 
-CREATE POLICY "Admin full access branches"
+CREATE POLICY "Owner full access branches"
 ON branches FOR ALL TO authenticated
-USING (public.is_admin())
-WITH CHECK (public.is_admin());
+USING (public.is_owner())
+WITH CHECK (public.is_owner());
 
 CREATE POLICY "Admin full access menu_items"
 ON menu_items FOR ALL TO authenticated
 USING (public.is_admin())
 WITH CHECK (public.is_admin());
 
-CREATE POLICY "Admin full access packages"
+CREATE POLICY "Owner full access packages"
 ON packages FOR ALL TO authenticated
-USING (public.is_admin())
-WITH CHECK (public.is_admin());
+USING (public.is_owner())
+WITH CHECK (public.is_owner());
 
 CREATE POLICY "Admin full access faqs"
 ON faqs FOR ALL TO authenticated

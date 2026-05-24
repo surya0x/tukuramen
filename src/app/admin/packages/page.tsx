@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Edit2, Plus, Save, ToggleLeft, ToggleRight, Trash2, X } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { useAdminRole } from '@/lib/hooks/useAdminRole';
 
 interface PackageItem {
   id: string;
@@ -35,6 +36,7 @@ function Modal({ isOpen, onClose, title, children }: { isOpen: boolean; onClose:
 }
 
 export default function AdminPackagesPage() {
+  const { isOwner } = useAdminRole();
   const [packages, setPackages] = useState<PackageItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -159,7 +161,7 @@ export default function AdminPackagesPage() {
           <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: '2rem', color: '#2d2420' }}>Paket</h1>
           <p style={{ color: '#7a6e63', fontSize: '0.85rem', marginTop: '0.25rem' }}>{loading ? 'Memuat paket...' : `${packages.length} paket tersimpan`}</p>
         </div>
-        <button onClick={() => { resetForm(); setShowAdd(true); }} style={{ background: '#9b291b', color: '#fff', padding: '0.625rem 1.25rem', borderRadius: '0.5rem', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <button onClick={() => { resetForm(); setShowAdd(true); }} style={{ background: '#9b291b', color: '#fff', padding: '0.625rem 1.25rem', borderRadius: '0.5rem', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', display: isOwner ? 'flex' : 'none', alignItems: 'center', gap: '0.5rem' }}>
           <Plus size={18} /> Tambah Paket
         </button>
       </div>
@@ -176,7 +178,9 @@ export default function AdminPackagesPage() {
               </div>
               <div style={{ display: 'flex', gap: '0.375rem' }}>
                 <button onClick={() => openEdit(pkg)} style={{ padding: '0.5rem', borderRadius: '0.5rem', background: '#faf8f0', border: '1px solid #e5e1d8', cursor: 'pointer', color: '#7a6e63' }}><Edit2 size={14} /></button>
-                <button onClick={() => setDeleteConfirm(pkg)} style={{ padding: '0.5rem', borderRadius: '0.5rem', background: '#faf8f0', border: '1px solid #e5e1d8', cursor: 'pointer', color: '#9b291b' }}><Trash2 size={14} /></button>
+                {isOwner && (
+                  <button onClick={() => setDeleteConfirm(pkg)} style={{ padding: '0.5rem', borderRadius: '0.5rem', background: '#faf8f0', border: '1px solid #e5e1d8', cursor: 'pointer', color: '#9b291b' }}><Trash2 size={14} /></button>
+                )}
               </div>
             </div>
             <p style={{ color: '#7a6e63', fontSize: '0.85rem', marginBottom: '1rem' }}>{pkg.description}</p>

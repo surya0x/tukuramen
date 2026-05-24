@@ -1,13 +1,33 @@
 import Image from 'next/image';
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { ArrowRight, ChevronDown, Clock, ExternalLink, Flame, MapPin, MessageCircle, Store } from 'lucide-react';
 import FAQAccordion from '@/components/ui/FAQAccordion';
 import HalalBadge from '@/components/ui/HalalBadge';
-import { BRANCH_MENU_SEED_DATA, BRANCHES_SEED, FAQS_SEED, PACKAGES_SEED, type BranchSlug } from '@/lib/types/database';
+import { createClient } from '@/lib/supabase/server';
+import { BRANCH_MENU_SEED_DATA, BRANCHES_SEED, FAQS_SEED, PACKAGES_SEED, type Branch, type BranchSlug, type Package } from '@/lib/types/database';
 
 const RED = '#9b291b';
 const GOLD = '#f4bd25';
 const WHITE = '#fdfdfd';
+
+export const dynamic = 'force-dynamic';
+
+export const metadata: Metadata = {
+  title: 'Beranda',
+  description:
+    'Tuku Ramen — ramen halal otentik Jepang di Ciputat dan Pondok Ranji, Tangerang Selatan. Cek menu signature, paket hemat, jam operasional, dan reservasi via WhatsApp.',
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    title: 'Tuku Ramen — Ramen Halal Otentik Jepang',
+    description:
+      'Ramen halal berkualitas tinggi dengan cita rasa otentik Jepang. Tersedia di Ciputat dan Pondok Ranji, Tangerang Selatan.',
+    url: '/',
+    type: 'website',
+  },
+};
 const defaultBranchSlug = BRANCHES_SEED[0].slug as BranchSlug;
 const signatureItems = BRANCH_MENU_SEED_DATA[defaultBranchSlug]['signature-ramen'];
 const variasiItems = BRANCH_MENU_SEED_DATA[defaultBranchSlug]['variasi-ramen'];
@@ -25,12 +45,74 @@ function shortBranchName(name: string) {
   return name.replace('Tuku Ramen ', '');
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+  const supabase = await createClient();
+  const [faqsResult, branchesResult, packagesResult] = await Promise.all([
+    supabase.from('faqs').select('question, answer').order('sort_order', { ascending: true }),
+    supabase.from('branches').select('*').order('name', { ascending: true }),
+    supabase.from('packages').select('*').eq('is_available', true).order('sort_order', { ascending: true }),
+  ]);
+
+  const faqItems = faqsResult.data && faqsResult.data.length > 0 ? faqsResult.data : FAQS_SEED;
+  const branches = (branchesResult.data && branchesResult.data.length > 0 ? branchesResult.data : BRANCHES_SEED) as Branch[];
+  const packages = (packagesResult.data && packagesResult.data.length > 0 ? packagesResult.data : PACKAGES_SEED) as Package[];
+  const homeDefaultSlug = branches[0]?.slug || defaultBranchSlug;
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://tukuramen.com';
+  const restaurantJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Restaurant',
+    name: 'Tuku Ramen',
+    description:
+      'Ramen halal otentik Jepang dengan dua cabang di Ciputat dan Pondok Ranji, Tangerang Selatan.',
+    url: siteUrl,
+    image: [`${siteUrl}/NLT09426.webp`, `${siteUrl}/NLT09439.webp`],
+    servesCuisine: ['Japanese', 'Halal Ramen'],
+    priceRange: 'Rp25.000 - Rp200.000',
+    acceptsReservations: 'True',
+    sameAs: [
+      'https://www.instagram.com/tukuramen/',
+      'https://www.tiktok.com/@tukuramen',
+      'https://www.facebook.com/profile.php?id=100084079308777',
+    ],
+    location: branches.map((branch) => ({
+      '@type': 'Place',
+      name: branch.name,
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: branch.address,
+        addressRegion: 'Banten',
+        addressCountry: 'ID',
+      },
+      telephone: branch.phone || branch.whatsapp,
+    })),
+  };
+  const faqJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.slice(0, 10).map((faq) => ({
+      '@type': 'Question',
+      name: faq.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: faq.answer,
+      },
+    })),
+  };
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(restaurantJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
+      />
       {/* ===== HERO ===== */}
       <section className="home-hero" style={{ position: 'relative', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
-        <Image src="/restaurant-interior.png" alt="Tuku Ramen Restaurant" fill style={{ objectFit: 'cover' }} priority />
+        <Image src="/pondokranji.webp" alt="Tuku Ramen Restaurant" fill style={{ objectFit: 'cover' }} priority />
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(0,0,0,0.58), rgba(0,0,0,0.35), rgba(0,0,0,0.68))' }} />
         <div className="home-hero-content" style={{ position: 'relative', zIndex: 10, textAlign: 'center', padding: '0 2rem', maxWidth: '700px' }}>
           <p className="animate-fade-in home-hero-eyebrow" style={{ color: 'rgba(255,255,255,0.68)', textTransform: 'uppercase', letterSpacing: '0.3em', fontSize: '0.75rem', marginBottom: '1.5rem' }}>
@@ -44,7 +126,7 @@ export default function HomePage() {
             <a href="#reservation" className="home-primary-action" style={{ background: RED, color: WHITE, padding: '0.875rem 2rem', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', textDecoration: 'none', borderRadius: '2px' }}>
               Reservasi Sekarang
             </a>
-            <Link href={`/menu?branch=${defaultBranchSlug}`} className="home-secondary-action" style={{ border: '1px solid rgba(255,255,255,0.45)', color: WHITE, padding: '0.875rem 2rem', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', textDecoration: 'none', borderRadius: '2px' }}>
+            <Link href={`/menu?branch=${homeDefaultSlug}`} className="home-secondary-action" style={{ border: '1px solid rgba(255,255,255,0.45)', color: WHITE, padding: '0.875rem 2rem', fontSize: '0.8rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', textDecoration: 'none', borderRadius: '2px' }}>
               Lihat Menu
             </Link>
           </div>
@@ -80,15 +162,15 @@ export default function HomePage() {
             <div className="home-image-mosaic" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <div style={{ borderRadius: '1rem', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
-                  <Image src="/hero-ramen.png" alt="Red Ramen" width={300} height={400} style={{ width: '100%', height: '16rem', objectFit: 'cover' }} />
+                  <Image src="/NLT09426.webp" alt="Tori Paitan Ramen" width={300} height={400} style={{ width: '100%', height: '16rem', objectFit: 'cover' }} />
                 </div>
                 <div style={{ borderRadius: '1rem', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
-                  <Image src="/food-spread.png" alt="Menu" width={300} height={200} style={{ width: '100%', height: '10rem', objectFit: 'cover' }} />
+                  <Image src="/NLT09439.webp" alt="Red Ramen" width={300} height={200} style={{ width: '100%', height: '10rem', objectFit: 'cover' }} />
                 </div>
               </div>
               <div style={{ paddingTop: '2rem' }}>
                 <div style={{ borderRadius: '1rem', overflow: 'hidden', boxShadow: '0 4px 20px rgba(0,0,0,0.1)' }}>
-                  <Image src="/restaurant-interior.png" alt="Interior" width={300} height={500} style={{ width: '100%', height: '22rem', objectFit: 'cover' }} />
+                  <Image src="/ciputat.webp" alt="Interior Tuku Ramen Ciputat" width={300} height={500} style={{ width: '100%', height: '22rem', objectFit: 'cover' }} />
                 </div>
               </div>
             </div>
@@ -150,7 +232,7 @@ export default function HomePage() {
             </div>
 
             <div className="home-branch-menu-links" style={{ borderTop: '1px solid #e5e1d8', padding: '1.25rem', textAlign: 'center' }}>
-              {BRANCHES_SEED.map((branch) => (
+              {branches.map((branch) => (
                 <Link key={branch.slug} href={`/menu?branch=${branch.slug}`} className="home-branch-link">
                   <Store size={18} style={{ color: RED }} />
                   <span>
@@ -175,7 +257,7 @@ export default function HomePage() {
           </div>
 
           <div className="grid-3-col home-package-grid">
-            {PACKAGES_SEED.slice(0, 3).map((pkg) => (
+            {packages.map((pkg) => (
               <div key={pkg.name} className="card home-package-card" style={{ padding: '2rem' }}>
                 <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.2rem', color: '#2d2420', marginBottom: '0.5rem' }}>{pkg.name}</h3>
                 <p style={{ fontFamily: "'Playfair Display', serif", fontSize: '2rem', color: RED, fontWeight: 700, marginBottom: '1rem' }}>
@@ -206,7 +288,7 @@ export default function HomePage() {
           </div>
 
           <div className="grid-2-col home-branch-grid" style={{ gap: '1.5rem' }}>
-            {BRANCHES_SEED.map((branch) => (
+            {branches.map((branch) => (
               <div key={branch.name} className="card home-branch-card" style={{ padding: '2rem' }}>
                 <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.35rem', color: '#2d2420', marginBottom: '1.25rem' }}>{branch.name}</h3>
 
@@ -231,8 +313,10 @@ export default function HomePage() {
                   <Link href={`/menu?branch=${branch.slug}`}>Menu</Link>
                   <a href={getReservationLink(branch.whatsapp)} target="_blank" rel="noopener noreferrer">WhatsApp</a>
                   {branch.maps_link && (
-                    <a href={branch.maps_link} target="_blank" rel="noopener noreferrer" aria-label={`Buka Google Maps ${branch.name}`}>
-                      <ExternalLink size={14} />
+                    <a href={branch.maps_link} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: '#fff', border: '1px solid #e5e1d8', padding: '0.625rem 1.25rem', borderRadius: '0.5rem', fontSize: '0.8rem', fontWeight: 600, color: '#2d2420', textDecoration: 'none', transition: 'all 0.2s' }}>
+                      <MapPin size={14} style={{ color: RED }} />
+                      Google Maps
+                      <ExternalLink size={12} style={{ color: '#998e83' }} />
                     </a>
                   )}
                 </div>
@@ -244,7 +328,7 @@ export default function HomePage() {
 
       {/* ===== PHOTO GALLERY ===== */}
       <section className="gallery-grid home-gallery">
-        {['/hero-ramen.png', '/food-spread.png', '/restaurant-interior.png', '/hero-ramen.png'].map((src, i) => (
+        {['/NLT09426.webp', '/ciputat.webp', '/NLT09439.webp', '/pondokranji.webp'].map((src, i) => (
           <div key={i} style={{ position: 'relative', aspectRatio: '1', overflow: 'hidden' }}>
             <Image src={src} alt="Tuku Ramen" fill style={{ objectFit: 'cover', transition: 'transform 0.7s' }} className="hover:scale-110" />
           </div>
@@ -264,7 +348,7 @@ export default function HomePage() {
           </div>
 
           <div className="grid-2-col home-reservation-grid" style={{ gap: '1.5rem', maxWidth: '700px', margin: '0 auto' }}>
-            {BRANCHES_SEED.map((branch) => (
+            {branches.map((branch) => (
               <a key={branch.name} href={getReservationLink(branch.whatsapp)} target="_blank" rel="noopener noreferrer" className="card home-whatsapp-card">
                 <MessageCircle size={32} style={{ color: WHITE }} />
                 <div style={{ textAlign: 'center' }}>
@@ -279,9 +363,9 @@ export default function HomePage() {
             ))}
           </div>
 
-          <p style={{ textAlign: 'center', color: '#998e83', fontSize: '0.8rem', marginTop: '1.5rem' }}>
+          {/* <p style={{ textAlign: 'center', color: '#998e83', fontSize: '0.8rem', marginTop: '1.5rem' }}>
             Ciputat: 10:30 - 23:00 | Pondok Ranji: 16:00 - 23:00
-          </p>
+          </p> */}
         </div>
       </section>
 
@@ -293,12 +377,12 @@ export default function HomePage() {
             <h2 className="section-title">FAQ</h2>
             <div className="divider" />
           </div>
-          <FAQAccordion items={FAQS_SEED} />
+          <FAQAccordion items={faqItems} />
         </div>
       </section>
 
       <div className="home-mobile-sticky">
-        <Link href={`/menu?branch=${defaultBranchSlug}`}>
+        <Link href={`/menu?branch=${homeDefaultSlug}`}>
           <Store size={16} />
           Menu
         </Link>

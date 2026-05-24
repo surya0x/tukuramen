@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Clock, Edit2, MapPin, Plus, Trash2, X } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { useAdminRole } from '@/lib/hooks/useAdminRole';
 import type { Branch, OperatingHours } from '@/lib/types/database';
 
 type BranchForm = {
@@ -54,6 +55,7 @@ function slugify(value: string) {
 }
 
 export default function AdminBranchesPage() {
+  const { isOwner } = useAdminRole();
   const [branches, setBranches] = useState<Branch[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -157,9 +159,8 @@ export default function AdminBranchesPage() {
 
   const renderBranchForm = (onSave: () => void, label: string) => (
     <>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
         <div><label style={labelStyle}>Nama Cabang *</label><input value={form.name} onChange={e => updateForm('name', e.target.value)} placeholder="Tuku Ramen Ciputat" style={inputStyle} /></div>
-        <div><label style={labelStyle}>Slug *</label><input value={form.slug} onChange={e => updateForm('slug', e.target.value)} placeholder="ciputat" style={inputStyle} /></div>
       </div>
       <div><label style={labelStyle}>Alamat *</label><textarea value={form.address} onChange={e => updateForm('address', e.target.value)} rows={3} placeholder="Alamat lengkap..." style={{ ...inputStyle, resize: 'none' }} /></div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
@@ -169,6 +170,40 @@ export default function AdminBranchesPage() {
       <div><label style={labelStyle}>Telepon</label><input value={form.phone} onChange={e => updateForm('phone', e.target.value)} placeholder="Opsional" style={inputStyle} /></div>
       <div style={{ marginBottom: '1rem' }}>
         <label style={labelStyle}>Jam Operasional</label>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+          <input
+            placeholder="Contoh: 10:30-23:00"
+            style={{ ...inputStyle, marginBottom: 0, flex: 1 }}
+            onKeyDown={e => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                const value = (e.target as HTMLInputElement).value.trim();
+                if (value) {
+                  const allHours: Record<string, string> = {};
+                  dayKeys.forEach(day => { allHours[day] = value; });
+                  setForm(prev => ({ ...prev, operating_hours: allHours }));
+                }
+              }
+            }}
+            id="apply-all-hours"
+          />
+          <button
+            type="button"
+            onClick={() => {
+              const input = document.getElementById('apply-all-hours') as HTMLInputElement;
+              const value = input?.value?.trim();
+              if (value) {
+                const allHours: Record<string, string> = {};
+                dayKeys.forEach(day => { allHours[day] = value; });
+                setForm(prev => ({ ...prev, operating_hours: allHours }));
+              }
+            }}
+            style={{ padding: '0.625rem 1rem', borderRadius: '0.5rem', border: '1px solid #e5e1d8', background: '#faf8f0', color: '#2d2420', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600, whiteSpace: 'nowrap' }}
+          >
+            Terapkan Semua
+          </button>
+        </div>
+        <p style={{ fontSize: '0.7rem', color: '#998e83', marginBottom: '0.75rem' }}>Isi jam lalu klik &quot;Terapkan Semua&quot; untuk mengubah semua hari, atau edit per hari di bawah.</p>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
           {dayKeys.map(day => (
             <div key={day}>
@@ -192,7 +227,7 @@ export default function AdminBranchesPage() {
           <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: '2rem', color: '#2d2420' }}>Cabang</h1>
           <p style={{ color: '#7a6e63', fontSize: '0.85rem', marginTop: '0.25rem' }}>{loading ? 'Memuat cabang...' : `${branches.length} cabang tersimpan`}</p>
         </div>
-        <button onClick={openAdd} style={{ background: '#9b291b', color: '#fff', padding: '0.625rem 1.25rem', borderRadius: '0.5rem', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <button onClick={openAdd} style={{ background: '#9b291b', color: '#fff', padding: '0.625rem 1.25rem', borderRadius: '0.5rem', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', display: isOwner ? 'flex' : 'none', alignItems: 'center', gap: '0.5rem' }}>
           <Plus size={18} /> Tambah Cabang
         </button>
       </div>
@@ -206,7 +241,9 @@ export default function AdminBranchesPage() {
               <h3 style={{ fontFamily: "'Playfair Display', serif", fontSize: '1.3rem', color: '#2d2420' }}>{branch.name}</h3>
               <div style={{ display: 'flex', gap: '0.375rem' }}>
                 <button onClick={() => openEdit(branch)} style={{ padding: '0.5rem', borderRadius: '0.5rem', background: '#faf8f0', border: '1px solid #e5e1d8', cursor: 'pointer', color: '#7a6e63' }}><Edit2 size={14} /></button>
-                <button onClick={() => setDeleteConfirm(branch)} style={{ padding: '0.5rem', borderRadius: '0.5rem', background: '#faf8f0', border: '1px solid #e5e1d8', cursor: 'pointer', color: '#9b291b' }}><Trash2 size={14} /></button>
+                {isOwner && (
+                  <button onClick={() => setDeleteConfirm(branch)} style={{ padding: '0.5rem', borderRadius: '0.5rem', background: '#faf8f0', border: '1px solid #e5e1d8', cursor: 'pointer', color: '#9b291b' }}><Trash2 size={14} /></button>
+                )}
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', marginBottom: '1.25rem' }}>

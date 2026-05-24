@@ -208,7 +208,7 @@ body {
 
 .home-branch-actions {
   display: grid;
-  grid-template-columns: 1fr 1fr auto;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 0.5rem;
   align-items: center;
 }
@@ -370,7 +370,7 @@ body {
   }
 
   .home-branch-actions {
-    grid-template-columns: 1fr 1fr 44px;
+    grid-template-columns: 1fr 1fr 1fr;
   }
 
   .home-gallery {

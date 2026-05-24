@@ -4,8 +4,9 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { UtensilsCrossed, Package, MapPin, HelpCircle, LayoutDashboard, LogOut, ChevronLeft, Menu, X } from 'lucide-react';
+import { UtensilsCrossed, Package, MapPin, HelpCircle, LayoutDashboard, LogOut, ChevronLeft, Menu, X, Crown, Shield } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { useAdminRole } from '@/lib/hooks/useAdminRole';
 
 const sidebarLinks = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
@@ -15,10 +16,22 @@ const sidebarLinks = [
   { href: '/admin/faqs', label: 'FAQ', icon: HelpCircle },
 ];
 
+function RoleBadge({ role }: { role: 'admin' | 'owner' | null }) {
+  if (!role) return null;
+  const isOwnerRole = role === 'owner';
+  return (
+    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem', padding: '0.25rem 0.625rem', borderRadius: '999px', background: isOwnerRole ? 'rgba(244,189,37,0.18)' : 'rgba(255,255,255,0.08)', color: isOwnerRole ? '#f4bd25' : 'rgba(255,255,255,0.6)', fontSize: '0.65rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+      {isOwnerRole ? <Crown size={11} /> : <Shield size={11} />}
+      {isOwnerRole ? 'Owner' : 'Admin'}
+    </div>
+  );
+}
+
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { role } = useAdminRole();
 
   if (pathname === '/admin/login') {
     return <>{children}</>;
@@ -78,6 +91,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <p style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.35)' }}>Admin Panel</p>
               </div>
             </div>
+            <div style={{ marginTop: '0.75rem' }}>
+              <RoleBadge role={role} />
+            </div>
           </div>
           <nav style={{ flex: 1, padding: '0.75rem', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
             {sidebarLinks.map(({ href, label, icon: Icon }) => {
@@ -109,12 +125,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <>
             <div onClick={() => setSidebarOpen(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 50 }} />
             <aside style={{ position: 'fixed', top: 0, left: 0, bottom: 0, width: '280px', background: '#1a1210', display: 'flex', flexDirection: 'column', zIndex: 60, boxShadow: '4px 0 20px rgba(0,0,0,0.3)' }}>
-              <div style={{ padding: '1.25rem', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <Image src="/tukuramen.svg" alt="Tuku Ramen" width={24} height={24} style={{ filter: 'invert(1)' }} />
-                  <div>
-                    <p style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600, fontSize: '0.8rem', color: '#fff' }}>TUKU RAMEN</p>
-                    <p style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.35)' }}>Admin Panel</p>
+              <div style={{ padding: '1.25rem', borderBottom: '1px solid rgba(255,255,255,0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <Image src="/tukuramen.svg" alt="Tuku Ramen" width={24} height={24} style={{ filter: 'invert(1)' }} />
+                    <div>
+                      <p style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600, fontSize: '0.8rem', color: '#fff' }}>TUKU RAMEN</p>
+                      <p style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.35)' }}>Admin Panel</p>
+                    </div>
+                  </div>
+                  <div style={{ marginTop: '0.75rem' }}>
+                    <RoleBadge role={role} />
                   </div>
                 </div>
                 <button onClick={() => setSidebarOpen(false)} style={{ color: 'rgba(255,255,255,0.5)', background: 'none', border: 'none', cursor: 'pointer', padding: '0.25rem' }}>

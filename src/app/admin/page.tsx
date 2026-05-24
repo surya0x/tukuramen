@@ -81,9 +81,7 @@ export default function AdminDashboard() {
           <p><strong style={{ color: '#2d2420' }}>Cabang</strong> - Tambah atau update jam operasional, alamat, Maps, dan WhatsApp reservasi</p>
           <p><strong style={{ color: '#2d2420' }}>FAQ</strong> - Tambah atau edit pertanyaan umum pelanggan</p>
         </div>
-        <div style={{ marginTop: '1.25rem', padding: '1rem', background: 'rgba(244,189,37,0.12)', border: '1px solid rgba(244,189,37,0.2)', borderRadius: '0.5rem', fontSize: '0.8rem', color: '#8a6510' }}>
-          Pastikan `supabase-schema.sql` sudah dijalankan, termasuk bucket `menu-images`, sebelum memakai upload gambar.
-        </div>
+        
       </div>
     </div>
   );

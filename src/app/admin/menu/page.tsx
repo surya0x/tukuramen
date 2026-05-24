@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Edit2, Flame, ImagePlus, Plus, Save, Search, ToggleLeft, ToggleRight, Trash2, Upload, X } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
+import { useAdminRole } from '@/lib/hooks/useAdminRole';
 import type { Branch, Category } from '@/lib/types/database';
 
 interface AdminMenuItem {
@@ -64,6 +65,7 @@ function getErrorMessage(err: unknown, fallback: string) {
 }
 
 export default function AdminMenuPage() {
+  const { isOwner } = useAdminRole();
   const [items, setItems] = useState<AdminMenuItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [branches, setBranches] = useState<Branch[]>([]);
@@ -361,7 +363,7 @@ export default function AdminMenuPage() {
             {loading ? 'Memuat menu...' : `${activeBranchCount} item di ${activeBranchData?.name.replace('Tuku Ramen ', '') || 'cabang'} (${items.length} total semua cabang)`}
           </p>
         </div>
-        <button onClick={openAdd} disabled={loading || !branches.length || !editableCategories.length} style={{ background: '#9b291b', color: '#fff', padding: '0.625rem 1.25rem', borderRadius: '0.5rem', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem', opacity: loading ? 0.7 : 1 }}>
+        <button onClick={openAdd} disabled={loading || !branches.length || !editableCategories.length} style={{ background: '#9b291b', color: '#fff', padding: '0.625rem 1.25rem', borderRadius: '0.5rem', border: 'none', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', display: isOwner ? 'flex' : 'none', alignItems: 'center', gap: '0.5rem', opacity: loading ? 0.7 : 1 }}>
           <Plus size={18} /> Tambah Menu
         </button>
       </div>
@@ -401,33 +403,37 @@ export default function AdminMenuPage() {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
         {filtered.map((item) => (
-          <div key={item.id} style={{ background: '#fff', border: '1px solid #e5e1d8', borderRadius: '0.75rem', padding: '1rem 1.25rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.75rem' }}>
-              <div style={{ width: '4.5rem', height: '4.5rem', borderRadius: '0.65rem', overflow: 'hidden', background: '#faf8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <div key={item.id} style={{ background: '#fff', border: '1px solid #e5e1d8', borderRadius: '0.75rem', padding: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+              <div style={{ width: '4rem', height: '4rem', borderRadius: '0.65rem', overflow: 'hidden', background: '#faf8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 {item.image_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={item.image_url} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 ) : (
-                  <span style={{ fontSize: '1.8rem' }}>🍜</span>
+                  <span style={{ fontSize: '1.6rem' }}>🍜</span>
                 )}
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.25rem' }}>
-                  <p style={{ fontWeight: 600, color: item.is_available ? '#2d2420' : '#998e83', textDecoration: item.is_available ? 'none' : 'line-through', fontSize: '0.9rem' }}>{item.name}</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem', marginBottom: '0.25rem' }}>
+                  <p style={{ fontWeight: 600, color: item.is_available ? '#2d2420' : '#998e83', textDecoration: item.is_available ? 'none' : 'line-through', fontSize: '0.9rem', wordBreak: 'break-word', flex: 1 }}>{item.name}</p>
+                  <p style={{ fontWeight: 600, color: '#2d2420', fontSize: '0.9rem', whiteSpace: 'nowrap', flexShrink: 0 }}>Rp {(item.price / 1000).toFixed(0)}k</p>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.375rem', flexWrap: 'wrap', marginBottom: '0.375rem' }}>
                   {item.is_spicy && <Flame size={13} style={{ color: '#9b291b' }} />}
                   <span style={{ background: '#faf8f0', color: '#7a6e63', padding: '0.125rem 0.5rem', borderRadius: '999px', fontSize: '0.7rem' }}>{item.category?.name || 'Tanpa kategori'}</span>
                 </div>
-                {item.description && <p style={{ fontSize: '0.78rem', color: '#998e83', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '100%' }}>{item.description}</p>}
+                {item.description && <p style={{ fontSize: '0.78rem', color: '#998e83', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', wordBreak: 'break-word' }}>{item.description}</p>}
               </div>
-              <p style={{ fontWeight: 600, color: '#2d2420', fontSize: '0.9rem', whiteSpace: 'nowrap' }}>Rp {(item.price / 1000).toFixed(0)}k</p>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '0.75rem', paddingTop: '0.625rem', borderTop: '1px solid #f0ece0' }}>
-              <button onClick={() => void toggleAvailability(item)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem', background: 'none', border: 'none', cursor: 'pointer' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '0.75rem', paddingTop: '0.625rem', borderTop: '1px solid #f0ece0', gap: '0.5rem', flexWrap: 'wrap' }}>
+              <button onClick={() => void toggleAvailability(item)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.375rem', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
                 {item.is_available ? <><ToggleRight size={20} style={{ color: '#15803d' }} /><span style={{ color: '#15803d', fontSize: '0.75rem', fontWeight: 600 }}>Available</span></> : <><ToggleLeft size={20} style={{ color: '#9b291b' }} /><span style={{ color: '#9b291b', fontSize: '0.75rem', fontWeight: 600 }}>Sold Out</span></>}
               </button>
               <div style={{ display: 'flex', gap: '0.375rem' }}>
                 <button onClick={() => openEdit(item)} style={{ padding: '0.375rem 0.625rem', borderRadius: '0.375rem', background: '#faf8f0', border: '1px solid #e5e1d8', cursor: 'pointer', color: '#7a6e63', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Edit2 size={13} /> Edit</button>
-                <button onClick={() => setDeleteConfirm(item)} style={{ padding: '0.375rem 0.625rem', borderRadius: '0.375rem', background: '#faf8f0', border: '1px solid #e5e1d8', cursor: 'pointer', color: '#9b291b', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Trash2 size={13} /> Hapus</button>
+                {isOwner && (
+                  <button onClick={() => setDeleteConfirm(item)} style={{ padding: '0.375rem 0.625rem', borderRadius: '0.375rem', background: '#faf8f0', border: '1px solid #e5e1d8', cursor: 'pointer', color: '#9b291b', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}><Trash2 size={13} /> Hapus</button>
+                )}
               </div>
             </div>
           </div>
