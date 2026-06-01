@@ -257,3 +257,33 @@ Untuk deployment ke Vercel atau hosting Next.js lain:
 ```bash
 npm run build
 ```
+
+## Supabase Free Plan Keep-Alive
+
+Project ini menambahkan Vercel Cron gratis untuk memanggil endpoint berikut sekali sehari:
+
+```txt
+/api/health/supabase
+```
+
+Endpoint tersebut melakukan query ringan ke tabel `branches` agar project Supabase tidak idle terlalu lama di Free Plan. Konfigurasi cron ada di:
+
+```txt
+vercel.json
+```
+
+Jadwal saat ini:
+
+```txt
+0 5 * * *
+```
+
+Artinya Vercel memanggil endpoint sekali sehari sekitar pukul 05:00 UTC. Pada Vercel Hobby, cron harian masih termasuk free tier.
+
+Untuk keamanan tambahan, buat environment variable berikut di Vercel:
+
+```env
+CRON_SECRET=isi_random_panjang
+```
+
+Jika `CRON_SECRET` diisi, endpoint health check hanya menerima request cron dengan header authorization dari Vercel. Jika belum diisi, endpoint tetap berjalan, tetapi sebaiknya set `CRON_SECRET` sebelum production dipakai luas.
