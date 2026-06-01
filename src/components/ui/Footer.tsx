@@ -85,14 +85,7 @@ export default function Footer() {
         </div>
 
         {/* Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '2.5rem', textAlign: 'center' }}>
-          <div>
-            <h4 style={{ fontWeight: 600, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '1rem', color: 'rgba(255,255,255,0.9)' }}>Jam Operasional</h4>
-            <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.85rem', fontWeight: 500 }}>Ciputat</p>
-            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', marginBottom: '0.5rem' }}>10:30 – 23:00</p>
-            <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.85rem', fontWeight: 500 }}>Pondok Ranji</p>
-            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem' }}>16:00 – 23:00</p>
-          </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '2.5rem', textAlign: 'center' }}>
           <div>
             <h4 style={{ fontWeight: 600, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '1rem', color: 'rgba(255,255,255,0.9)' }}>Lokasi</h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>

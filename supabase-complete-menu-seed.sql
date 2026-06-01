@@ -18,8 +18,8 @@ ON CONFLICT (slug) DO UPDATE SET
   sort_order = EXCLUDED.sort_order;
 
 INSERT INTO branches (name, slug, address, maps_link, whatsapp, operating_hours) VALUES
-  ('Tuku Ramen Ciputat', 'ciputat', 'Jl. Ir. H. Juanda, Ciputat, Tangerang Selatan, Banten', 'https://maps.google.com', 'https://bit.ly/reservasiciputat', '{"mon":"10:30-23:00","tue":"10:30-23:00","wed":"10:30-23:00","thu":"10:30-23:00","fri":"10:30-23:00","sat":"10:30-23:00","sun":"10:30-23:00"}'),
-  ('Tuku Ramen Pondok Ranji', 'pondok-ranji', 'Jl. Pondok Ranji, Ciputat Timur, Tangerang Selatan, Banten', 'https://maps.google.com', 'https://bit.ly/reservasipondokranji', '{"mon":"16:00-23:00","tue":"16:00-23:00","wed":"16:00-23:00","thu":"16:00-23:00","fri":"16:00-23:00","sat":"16:00-23:00","sun":"16:00-23:00"}')
+  ('Tuku Ramen Ciputat', 'ciputat', 'Jl. Ir. H. Juanda, Ciputat, Tangerang Selatan, Banten', 'https://maps.app.goo.gl/7GJkVvbRbFt3f2pe7', 'https://bit.ly/reservasiciputat', '{"mon":"10:30-23:00","tue":"10:30-23:00","wed":"10:30-23:00","thu":"10:30-23:00","fri":"10:30-23:00","sat":"10:30-23:00","sun":"10:30-23:00"}'),
+  ('Tuku Ramen Pondok Ranji', 'pondok-ranji', 'Jl. Pondok Ranji, Ciputat Timur, Tangerang Selatan, Banten', 'https://maps.app.goo.gl/qJ88piw3moKapKRu5', 'https://bit.ly/reservasipondokranji', '{"mon":"16:00-23:00","tue":"16:00-23:00","wed":"16:00-23:00","thu":"16:00-23:00","fri":"16:00-23:00","sat":"16:00-23:00","sun":"16:00-23:00"}')
 ON CONFLICT (slug) DO UPDATE SET
   name = EXCLUDED.name,
   address = EXCLUDED.address,
