@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Analytics } from '@vercel/analytics/next';
 import './globals.css';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://tukuramen.com';
@@ -76,6 +77,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="id">
       <body style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
         {children}
+        <Analytics />
       </body>
     </html>
   );
