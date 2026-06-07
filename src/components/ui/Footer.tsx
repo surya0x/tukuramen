@@ -92,11 +92,11 @@ export default function Footer() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               <div>
                 <a href={BRANCH_MAP_LINKS.ciputat} target="_blank" rel="noopener noreferrer" style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.85rem', fontWeight: 500, textDecoration: 'none' }}>Ciputat</a>
-                <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem' }}>Jl. Ir. H. Juanda, Tangerang Selatan</p>
+                <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem', lineHeight: 1.6 }}>Jl. Tarumanegara No.83A, Cireundeu, Kec. Ciputat Tim., Kota Tangerang Selatan, Banten 15419</p>
               </div>
               <div>
                 <a href={BRANCH_MAP_LINKS['pondok-ranji']} target="_blank" rel="noopener noreferrer" style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.85rem', fontWeight: 500, textDecoration: 'none' }}>Pondok Ranji</a>
-                <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem' }}>Jl. Pondok Ranji, Tangerang Selatan</p>
+                <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem', lineHeight: 1.6 }}>Jl. W R Supratman Ruko No.02, RT.005/RW.10, Rengas, Kec. Ciputat Tim., Kota Tangerang Selatan, Banten 15412</p>
               </div>
             </div>
           </div>

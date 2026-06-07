@@ -181,7 +181,7 @@ export const BRANCHES_SEED = [
   {
     name: 'Tuku Ramen Ciputat',
     slug: 'ciputat',
-    address: 'Jl. Ir. H. Juanda, Ciputat, Tangerang Selatan, Banten',
+    address: 'Jl. Tarumanegara No.83A, Cireundeu, Kec. Ciputat Tim., Kota Tangerang Selatan, Banten 15419',
     operating_hours: { mon: '10:30-23:00', tue: '10:30-23:00', wed: '10:30-23:00', thu: '10:30-23:00', fri: '10:30-23:00', sat: '10:30-23:00', sun: '10:30-23:00' },
     maps_link: BRANCH_MAP_LINKS.ciputat,
     phone: null,
@@ -190,7 +190,7 @@ export const BRANCHES_SEED = [
   {
     name: 'Tuku Ramen Pondok Ranji',
     slug: 'pondok-ranji',
-    address: 'Jl. Pondok Ranji, Ciputat Timur, Tangerang Selatan, Banten',
+    address: 'Jl. W R Supratman Ruko No.02, RT.005/RW.10, Rengas, Kec. Ciputat Tim., Kota Tangerang Selatan, Banten 15412',
     operating_hours: { mon: '16:00-23:00', tue: '16:00-23:00', wed: '16:00-23:00', thu: '16:00-23:00', fri: '16:00-23:00', sat: '16:00-23:00', sun: '16:00-23:00' },
     maps_link: BRANCH_MAP_LINKS['pondok-ranji'],
     phone: null,
