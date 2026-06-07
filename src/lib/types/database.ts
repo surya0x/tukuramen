@@ -145,6 +145,11 @@ export const BRANCH_SHORT_NAMES: Record<BranchSlug, string> = {
   'pondok-ranji': 'Pondok Ranji',
 };
 
+export const BRANCH_MAP_LINKS: Record<BranchSlug, string> = {
+  ciputat: 'https://maps.app.goo.gl/7GJkVvbRbFt3f2pe7',
+  'pondok-ranji': 'https://maps.app.goo.gl/qJ88piw3moKapKRu5',
+};
+
 export const TOPPINGS_SEED = [
   { name: 'Tamago', price: 5000 },
   { name: 'Jagung', price: 5000 },
@@ -178,7 +183,7 @@ export const BRANCHES_SEED = [
     slug: 'ciputat',
     address: 'Jl. Ir. H. Juanda, Ciputat, Tangerang Selatan, Banten',
     operating_hours: { mon: '10:30-23:00', tue: '10:30-23:00', wed: '10:30-23:00', thu: '10:30-23:00', fri: '10:30-23:00', sat: '10:30-23:00', sun: '10:30-23:00' },
-    maps_link: 'https://maps.app.goo.gl/7GJkVvbRbFt3f2pe7',
+    maps_link: BRANCH_MAP_LINKS.ciputat,
     phone: null,
     whatsapp: 'https://bit.ly/reservasiciputat',
   },
@@ -187,7 +192,7 @@ export const BRANCHES_SEED = [
     slug: 'pondok-ranji',
     address: 'Jl. Pondok Ranji, Ciputat Timur, Tangerang Selatan, Banten',
     operating_hours: { mon: '16:00-23:00', tue: '16:00-23:00', wed: '16:00-23:00', thu: '16:00-23:00', fri: '16:00-23:00', sat: '16:00-23:00', sun: '16:00-23:00' },
-    maps_link: 'https://maps.app.goo.gl/qJ88piw3moKapKRu5',
+    maps_link: BRANCH_MAP_LINKS['pondok-ranji'],
     phone: null,
     whatsapp: 'https://bit.ly/reservasipondokranji',
   },

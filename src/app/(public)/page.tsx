@@ -5,7 +5,7 @@ import { ArrowRight, ChevronDown, Clock, ExternalLink, Flame, MapPin, MessageCir
 import FAQAccordion from '@/components/ui/FAQAccordion';
 import HalalBadge from '@/components/ui/HalalBadge';
 import { createClient } from '@/lib/supabase/server';
-import { BRANCH_MENU_SEED_DATA, BRANCHES_SEED, FAQS_SEED, PACKAGES_SEED, type Branch, type BranchSlug, type Package } from '@/lib/types/database';
+import { BRANCH_MAP_LINKS, BRANCH_MENU_SEED_DATA, BRANCHES_SEED, FAQS_SEED, PACKAGES_SEED, type Branch, type BranchSlug, type Package } from '@/lib/types/database';
 
 const RED = '#9b291b';
 const GOLD = '#f4bd25';
@@ -39,6 +39,10 @@ const dayNames: Record<string, string> = {
 
 function getReservationLink(whatsapp: string | null) {
   return whatsapp || '#';
+}
+
+function getBranchMapsLink(slug: string, mapsLink: string | null) {
+  return BRANCH_MAP_LINKS[slug as BranchSlug] || mapsLink;
 }
 
 function shortBranchName(name: string) {
@@ -85,6 +89,7 @@ export default async function HomePage() {
         addressCountry: 'ID',
       },
       telephone: branch.phone || branch.whatsapp,
+      hasMap: getBranchMapsLink(branch.slug, branch.maps_link),
     })),
   };
   const faqJsonLd = {
@@ -312,8 +317,8 @@ export default async function HomePage() {
                 <div className="home-branch-actions">
                   <Link href={`/menu?branch=${branch.slug}`}>Menu</Link>
                   <a href={getReservationLink(branch.whatsapp)} target="_blank" rel="noopener noreferrer">WhatsApp</a>
-                  {branch.maps_link && (
-                    <a href={branch.maps_link} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: '#fff', border: '1px solid #e5e1d8', padding: '0.625rem 1.25rem', borderRadius: '0.5rem', fontSize: '0.8rem', fontWeight: 600, color: '#2d2420', textDecoration: 'none', transition: 'all 0.2s' }}>
+                  {getBranchMapsLink(branch.slug, branch.maps_link) && (
+                    <a href={getBranchMapsLink(branch.slug, branch.maps_link) || '#'} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', background: '#fff', border: '1px solid #e5e1d8', padding: '0.625rem 1.25rem', borderRadius: '0.5rem', fontSize: '0.8rem', fontWeight: 600, color: '#2d2420', textDecoration: 'none', transition: 'all 0.2s' }}>
                       <MapPin size={14} style={{ color: RED }} />
                       Google Maps
                       <ExternalLink size={12} style={{ color: '#998e83' }} />

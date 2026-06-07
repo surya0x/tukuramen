@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import HalalBadge from './HalalBadge';
+import { BRANCH_MAP_LINKS } from '@/lib/types/database';
 
 function InstagramIcon({ size = 16 }: { size?: number }) {
   return (
@@ -90,11 +91,11 @@ export default function Footer() {
             <h4 style={{ fontWeight: 600, fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.15em', marginBottom: '1rem', color: 'rgba(255,255,255,0.9)' }}>Lokasi</h4>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
               <div>
-                <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.85rem', fontWeight: 500 }}>Ciputat</p>
+                <a href={BRANCH_MAP_LINKS.ciputat} target="_blank" rel="noopener noreferrer" style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.85rem', fontWeight: 500, textDecoration: 'none' }}>Ciputat</a>
                 <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem' }}>Jl. Ir. H. Juanda, Tangerang Selatan</p>
               </div>
               <div>
-                <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.85rem', fontWeight: 500 }}>Pondok Ranji</p>
+                <a href={BRANCH_MAP_LINKS['pondok-ranji']} target="_blank" rel="noopener noreferrer" style={{ color: 'rgba(255,255,255,0.8)', fontSize: '0.85rem', fontWeight: 500, textDecoration: 'none' }}>Pondok Ranji</a>
                 <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.8rem' }}>Jl. Pondok Ranji, Tangerang Selatan</p>
               </div>
             </div>
